@@ -1,5 +1,7 @@
 from sqlalchemy import create_engine,text
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker,Session
+
+from collections.abc import Generator
 
 from app.core.config import get_settings
 
@@ -12,6 +14,14 @@ engine=create_engine(
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+
+def get_db()->Generator[Session,None,None]:
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 def check_database_connection() -> bool:
