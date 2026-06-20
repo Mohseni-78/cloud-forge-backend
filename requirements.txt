@@ -8,3 +8,5 @@ sqlalchemy
 psycopg2-binary
 redis[hiredis]
 alembic
+bcrypt==4.3.0
+pyjwt[crypto]

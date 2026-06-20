@@ -7,6 +7,9 @@ from sqlalchemy.orm import Mapped,mapped_column
 
 from app.db.base import Base
 
+
+
+# Users
 class User(Base):
     __tablename__ = "users"
 
@@ -44,6 +47,12 @@ class User(Base):
     is_verified: Mapped[bool] = mapped_column(
         Boolean,
         default=False,
+        nullable=False,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
         nullable=False,
     )
 
