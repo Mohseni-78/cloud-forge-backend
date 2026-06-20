@@ -1,0 +1,27 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: cloudforge-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cloudforge
+      POSTGRES_PASSWORD: cloudforge_password
+      POSTGRES_DB: cloudforge_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - cloudforge_postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:8-alpine
+    container_name: cloudforge-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - cloudforge_redis_data:/data
+
+volumes:
+  cloudforge_postgres_data:
+  cloudforge_redis_data:

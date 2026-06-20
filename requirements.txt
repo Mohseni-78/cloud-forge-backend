@@ -1,0 +1,9 @@
+fastapi[all]
+uvicorn[standard]
+gunicorn
+pydantic
+pydantic-settings
+python-dotenv
+sqlalchemy
+psycopg2-binary
+redis[hiredis]
