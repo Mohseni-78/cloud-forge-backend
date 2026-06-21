@@ -1,11 +1,12 @@
 import uuid
 from datetime import datetime
-from pydantic import BaseModel, EmailStr, ConfigDict
+
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 
 class UserRead(BaseModel):
-    id:uuid.UUID
-    email:EmailStr
+    id: uuid.UUID
+    email: EmailStr
     username: str
     is_active: bool
     is_verified: bool

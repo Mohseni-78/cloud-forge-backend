@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime, UTC
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import bcrypt
@@ -7,15 +7,16 @@ from jwt import InvalidTokenError
 
 from app.core.config import get_settings
 
-settings=get_settings()
+settings = get_settings()
 
 
 def hash_password(password: str) -> str:
     password_bytes = password.encode("utf-8")
-    salt=bcrypt.gensalt()
-    hashed_password=bcrypt.hashpw(password_bytes,salt)
+    salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(password_bytes, salt)
 
     return hashed_password.decode("utf-8")
+
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     plain_password_bytes = plain_password.encode("utf-8")
@@ -23,18 +24,24 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
     return bcrypt.checkpw(plain_password_bytes, hashed_password_bytes)
 
-def create_token(subject:str,token_type:str,expires_delta:timedelta,extra_claims:dict[str,Any] | None=None)->str:
-    now= datetime.now(UTC)
-    expires=now+expires_delta
 
-    payload={
-        'sub':subject,
-        "type":token_type,
-        'iat':now,
-        'exp':expires,
+def create_token(
+    subject: str,
+    token_type: str,
+    expires_delta: timedelta,
+    extra_claims: dict[str, Any] | None = None,
+) -> str:
+    now = datetime.now(UTC)
+    expires = now + expires_delta
+
+    payload = {
+        "sub": subject,
+        "type": token_type,
+        "iat": now,
+        "exp": expires,
     }
 
-    if(extra_claims):
+    if extra_claims:
         payload.update(extra_claims)
 
     return jwt.encode(
@@ -43,22 +50,27 @@ def create_token(subject:str,token_type:str,expires_delta:timedelta,extra_claims
         algorithm=settings.jwt_algorithm,
     )
 
-def create_access_token(subject:str)->str:
+
+def create_access_token(subject: str) -> str:
     return create_token(
         subject=subject,
         token_type="access",
-        expires_delta=timedelta(minutes=settings.access_token_expire_minutes)
+        expires_delta=timedelta(minutes=settings.access_token_expire_minutes),
     )
 
-def create_refresh_token(subject:str)->str:
+
+def create_refresh_token(subject: str) -> str:
     return create_token(
         subject=subject,
         token_type="refresh",
-        expires_delta=timedelta(days=settings.refresh_token_expire_days)
+        expires_delta=timedelta(days=settings.refresh_token_expire_days),
     )
 
-def decode_token(token:str)->dict[str,Any]:
+
+def decode_token(token: str) -> dict[str, Any]:
     try:
-        return jwt.decode(token,settings.jwt_secret_key,algorithms=[settings.jwt_algorithm])
+        return jwt.decode(
+            token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm]
+        )
     except InvalidTokenError as exc:
         raise ValueError("Invalid token") from exc

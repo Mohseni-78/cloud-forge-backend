@@ -1,22 +1,33 @@
-from fastapi import APIRouter, status, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.security import create_access_token, create_refresh_token, decode_token
+from app.db.models import User
 from app.db.session import get_db
 from app.modules.auth.dependencies import get_current_user
-from app.modules.auth.schemas import RegisterRequest, TokenPair, LoginRequest, AccessTokenResponse, RefreshTokenRequest
-from app.modules.auth.service import get_user_by_email, get_user_by_username, create_user, authenticate_user, \
-    get_user_by_id
+from app.modules.auth.schemas import (
+    AccessTokenResponse,
+    LoginRequest,
+    RefreshTokenRequest,
+    RegisterRequest,
+    TokenPair,
+)
+from app.modules.auth.service import (
+    authenticate_user,
+    create_user,
+    get_user_by_email,
+    get_user_by_id,
+    get_user_by_username,
+)
 from app.modules.users.schemas import UserRead
-
-from app.db.models import User
 
 router = APIRouter()
 
-@router.post("/register",response_model=UserRead,status_code=status.HTTP_201_CREATED)
-def register(payload:RegisterRequest,db:Session=Depends(get_db)):
 
-    existing_user_by_email=get_user_by_email(db, email=payload.email)
+@router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
+def register(payload: RegisterRequest, db: Session = Depends(get_db)):
+
+    existing_user_by_email = get_user_by_email(db, email=payload.email)
     if existing_user_by_email is not None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -30,13 +41,13 @@ def register(payload:RegisterRequest,db:Session=Depends(get_db)):
             detail="Username already taken",
         )
 
-    return create_user(db,payload)
+    return create_user(db, payload)
 
 
-@router.post("/login",response_model=TokenPair)
-def login(payload:LoginRequest,db:Session=Depends(get_db)):
+@router.post("/login", response_model=TokenPair)
+def login(payload: LoginRequest, db: Session = Depends(get_db)):
 
-    user = authenticate_user(db, payload )
+    user = authenticate_user(db, payload)
 
     if user is None:
         raise HTTPException(
@@ -44,11 +55,11 @@ def login(payload:LoginRequest,db:Session=Depends(get_db)):
             detail="Invalid email or password",
         )
 
-    access_token=create_access_token(subject=str(user.id))
-    refresh_token=create_refresh_token(subject=str(user.id))
+    access_token = create_access_token(subject=str(user.id))
+    refresh_token = create_refresh_token(subject=str(user.id))
 
+    return TokenPair(access_token=access_token, refresh_token=refresh_token)
 
-    return TokenPair(access_token=access_token,refresh_token=refresh_token)
 
 @router.post("/refresh", response_model=AccessTokenResponse)
 def refresh_token(
@@ -96,6 +107,7 @@ def refresh_token(
     new_access_token = create_access_token(subject=str(user.id))
 
     return AccessTokenResponse(access_token=new_access_token)
+
 
 @router.get("/me", response_model=UserRead)
 def get_me(

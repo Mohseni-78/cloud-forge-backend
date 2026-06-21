@@ -10,3 +10,5 @@ redis[hiredis]
 alembic
 bcrypt==4.3.0
 pyjwt[crypto]
+black
+ruff
