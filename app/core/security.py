@@ -1,5 +1,6 @@
 from datetime import UTC, datetime, timedelta
 from typing import Any
+import uuid
 
 import bcrypt
 import jwt
@@ -39,6 +40,7 @@ def create_token(
         "type": token_type,
         "iat": now,
         "exp": expires,
+        "jti": str(uuid.uuid4()),
     }
 
     if extra_claims:
@@ -74,3 +76,15 @@ def decode_token(token: str) -> dict[str, Any]:
         )
     except InvalidTokenError as exc:
         raise ValueError("Invalid token") from exc
+
+
+def get_token_expire_datetime(payload: dict[str, Any]) -> datetime:
+    exp = payload.get('exp')
+
+    if exp is None:
+        raise ValueError("Token has no expiration")
+
+    if isinstance(exp, datetime):
+        return exp
+
+    return datetime.fromtimestamp(float(exp), UTC)
